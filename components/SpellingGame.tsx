@@ -69,7 +69,6 @@ const SpellingGame: React.FC<SpellingGameProps> = ({ onComplete }) => {
         speak(currentWord.english);
       } else {
         setGameStatus('wrong');
-        setStreak(0);
       }
     }
   };
@@ -155,10 +154,10 @@ const SpellingGame: React.FC<SpellingGameProps> = ({ onComplete }) => {
               key={letter.id}
               onClick={() => handleSelectedLetterClick(letter)}
               className={`w-10 h-12 sm:w-12 sm:h-14 flex items-center justify-center text-2xl font-bold rounded-lg shadow-sm border-b-4 transition-all active:scale-95 ${gameStatus === 'correct'
-                  ? 'bg-green-100 text-green-700 border-green-300'
-                  : gameStatus === 'wrong'
-                    ? 'bg-red-100 text-red-700 border-red-300'
-                    : 'bg-white text-slate-800 border-slate-200'
+                ? 'bg-green-100 text-green-700 border-green-300'
+                : gameStatus === 'wrong'
+                  ? 'bg-red-100 text-red-700 border-red-300'
+                  : 'bg-white text-slate-800 border-slate-200'
                 }`}
             >
               {letter.char}

@@ -18,6 +18,8 @@ const LEVEL_ORDER = [
 
 const INITIAL_STATE: UserProfile = {
     coins: 0,
+    earnedMinutes: 0,
+    receivedFirstLevelTime: false,
     unlockedLevels: [LEVEL_ORDER[0]],
     levelScores: {},
     purchasedItems: {
@@ -44,6 +46,12 @@ export const useGameState = () => {
                 if (!parsed.levelScores) {
                     parsed.levelScores = {};
                 }
+                if (parsed.earnedMinutes === undefined) {
+                    parsed.earnedMinutes = 0;
+                }
+                if (parsed.receivedFirstLevelTime === undefined) {
+                    parsed.receivedFirstLevelTime = false;
+                }
                 if (!parsed.purchasedItems) {
                     parsed.purchasedItems = {
                         [`accessory-${parsed.avatar?.accessory || '⭐'}`]: true,
@@ -69,6 +77,14 @@ export const useGameState = () => {
             const currentBest = prev.levelScores[level] || 0;
             const newLevelScores = { ...prev.levelScores };
 
+            let coinsToAdd = score;
+            if (level === LEVEL_ORDER[0]) {
+                const currentLevelBest = prev.levelScores[level] || 0;
+                // For level 1, only add coins for new high scores, capped at 10 total
+                const cappedNewScore = Math.min(score, 10);
+                coinsToAdd = Math.max(0, cappedNewScore - currentLevelBest);
+            }
+
             if (score > currentBest) {
                 newLevelScores[level] = score;
             }
@@ -77,13 +93,24 @@ export const useGameState = () => {
             const nextLevel = LEVEL_ORDER[currentIndex + 1];
 
             const newUnlocked = [...prev.unlockedLevels];
-            if (nextLevel && !newUnlocked.includes(nextLevel)) {
+            // Only unlock next level if score reaches the threshold (5)
+            if (score >= 5 && nextLevel && !newUnlocked.includes(nextLevel)) {
                 newUnlocked.push(nextLevel);
+            }
+
+            // Reward 10 minutes for completing the first level once
+            let addedMinutes = 0;
+            let newlyReceivedFirstLevelTime = prev.receivedFirstLevelTime;
+            if (level === LEVEL_ORDER[0] && score >= 5 && !prev.receivedFirstLevelTime) {
+                addedMinutes = 10;
+                newlyReceivedFirstLevelTime = true;
             }
 
             return {
                 ...prev,
-                coins: prev.coins + score,
+                coins: prev.coins + coinsToAdd,
+                earnedMinutes: prev.earnedMinutes + addedMinutes,
+                receivedFirstLevelTime: newlyReceivedFirstLevelTime,
                 levelScores: newLevelScores,
                 unlockedLevels: newUnlocked
             };

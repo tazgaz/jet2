@@ -33,8 +33,8 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onComplete }) => {
   };
 
   const handleFinish = () => {
-    // Award gems based on unique cards viewed (e.g. 1 gem per card)
-    onComplete(viewedCount.size);
+    // Award gems based on unique cards viewed, capped at 10 points
+    onComplete(Math.min(viewedCount.size, 10));
   };
 
   const handleFlip = () => {
@@ -80,7 +80,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onComplete }) => {
           onClick={handleFinish}
           className="bg-emerald-500 text-white px-6 py-2 rounded-full font-bold shadow-md hover:bg-emerald-600 active:scale-95 transition-all text-sm"
         >
-          סיימתי! +{viewedCount.size} 💎
+          סיימתי! +{Math.min(viewedCount.size, 10)} 💎
         </button>
       </div>
 
