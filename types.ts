@@ -20,6 +20,21 @@ export interface OddOneOutQuestion {
   reason: string;
 }
 
+export interface StoryQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: string;
+}
+
+export interface Story {
+  id: string;
+  title: string;
+  emoji: string;
+  text: string[];
+  questions: StoryQuestion[];
+}
+
 export enum AppView {
   HOME = 'HOME',
   FLASHCARDS = 'FLASHCARDS',
@@ -27,5 +42,7 @@ export enum AppView {
   QUIZ = 'QUIZ',
   ODD_ONE_OUT = 'ODD_ONE_OUT',
   SPELLING = 'SPELLING',
-  IMAGE_QUIZ = 'IMAGE_QUIZ'
+  IMAGE_QUIZ = 'IMAGE_QUIZ',
+  SENTENCE_BUILDER = 'SENTENCE_BUILDER',
+  STORY_READING = 'STORY_READING'
 }
