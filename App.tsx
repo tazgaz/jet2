@@ -9,32 +9,60 @@ import ImageQuiz from './components/ImageQuiz';
 import CountdownTimer from './components/CountdownTimer';
 import SentenceBuilder from './components/SentenceBuilder';
 import StoryReading from './components/StoryReading';
-import { BookOpen, BrainCircuit, GraduationCap, LayoutGrid, Home, Pencil, Image as ImageIcon, Type, BookCheck } from 'lucide-react';
+import GameMap from './components/GameMap';
+import DiamondShop from './components/DiamondShop';
+import { useGameState } from './hooks/useGameState';
+import { BookOpen, BrainCircuit, GraduationCap, LayoutGrid, Home, Pencil, Image as ImageIcon, Type, BookCheck, Diamond, ShoppingBag } from 'lucide-react';
 
 const App: React.FC = () => {
+  const { profile, updateLevelScore, purchaseItem, selectItem, LEVEL_ORDER } = useGameState();
   const [currentView, setCurrentView] = useState<AppView>(AppView.HOME);
+
+  const handleGameComplete = (score: number) => {
+    updateLevelScore(currentView, score);
+    // Optionally return to home after a delay or let the game component handle it
+  };
 
   const renderView = () => {
     switch (currentView) {
       case AppView.FLASHCARDS:
-        return <Flashcards />;
+        return <Flashcards onComplete={handleGameComplete} />;
       case AppView.MEMORY:
-        return <MemoryGame />;
+        return <MemoryGame onComplete={handleGameComplete} />;
       case AppView.QUIZ:
-        return <Quiz />;
+        return <Quiz onComplete={handleGameComplete} />;
       case AppView.ODD_ONE_OUT:
-        return <OddOneOut />;
+        return <OddOneOut onComplete={handleGameComplete} />;
       case AppView.SPELLING:
-        return <SpellingGame />;
+        return <SpellingGame onComplete={handleGameComplete} />;
       case AppView.IMAGE_QUIZ:
-        return <ImageQuiz />;
+        return <ImageQuiz onComplete={handleGameComplete} />;
       case AppView.SENTENCE_BUILDER:
-        return <SentenceBuilder />;
+        return <SentenceBuilder onComplete={handleGameComplete} />;
       case AppView.STORY_READING:
-        return <StoryReading />;
+        return <StoryReading onComplete={handleGameComplete} />;
+      case AppView.SHOP:
+        return (
+          <DiamondShop
+            profile={profile}
+            onPurchase={purchaseItem}
+            onSelect={selectItem}
+            onClose={() => setCurrentView(AppView.HOME)}
+          />
+        );
       case AppView.HOME:
       default:
-        return <HomeMenu setView={setCurrentView} />;
+        return (
+          <div className="flex flex-col gap-6">
+            <GameMap
+              profile={profile}
+              levelOrder={LEVEL_ORDER}
+              onSelectLevel={setCurrentView}
+            />
+
+            <CountdownTimer />
+          </div>
+        );
     }
   };
 
@@ -55,13 +83,44 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {currentView !== AppView.HOME && (
-            <button
-              onClick={() => setCurrentView(AppView.HOME)}
-              className="p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-full transition-colors"
-            >
-              <Home size={24} />
-            </button>
+          {currentView !== AppView.HOME ? (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentView(AppView.SHOP)}
+                className="p-2 text-slate-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-full transition-colors flex items-center gap-2"
+                title="Diamond Shop"
+              >
+                <ShoppingBag size={24} />
+              </button>
+              <button
+                onClick={() => setCurrentView(AppView.HOME)}
+                className="p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-full transition-colors flex items-center gap-2"
+              >
+                <Home size={24} />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setCurrentView(AppView.SHOP)}
+                className="p-2 text-slate-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-full transition-colors relative group"
+              >
+                <ShoppingBag size={24} />
+                <div className="absolute top-0 right-0 w-2 h-2 bg-yellow-400 rounded-full ring-2 ring-white animate-pulse" />
+              </button>
+
+              <div className="flex items-center gap-3 bg-slate-50 px-4 py-1.5 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-1.5">
+                  <Diamond className="text-yellow-500 fill-yellow-500" size={18} />
+                  <span className="font-black text-slate-700">{profile.coins}</span>
+                </div>
+                <div className="w-px h-4 bg-slate-200" />
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Lv.</span>
+                  <span className="font-black text-sky-600">{profile.unlockedLevels.length}</span>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </header>
@@ -72,100 +131,5 @@ const App: React.FC = () => {
     </div>
   );
 };
-
-const HomeMenu: React.FC<{ setView: (view: AppView) => void }> = ({ setView }) => {
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3">
-        <MenuButton
-          title="כרטיסיות"
-          icon={<BookOpen size={28} />}
-          color="bg-sky-500"
-          borderColor="border-sky-100"
-          onClick={() => setView(AppView.FLASHCARDS)}
-        />
-
-        <MenuButton
-          title="זיהוי תמונות"
-          icon={<ImageIcon size={28} />}
-          color="bg-indigo-500"
-          borderColor="border-indigo-100"
-          onClick={() => setView(AppView.IMAGE_QUIZ)}
-        />
-
-        <MenuButton
-          title="משחק הזיכרון"
-          icon={<LayoutGrid size={28} />}
-          color="bg-purple-500"
-          borderColor="border-purple-100"
-          onClick={() => setView(AppView.MEMORY)}
-        />
-
-        <MenuButton
-          title="סדר את האותיות"
-          icon={<Pencil size={28} />}
-          color="bg-pink-500"
-          borderColor="border-pink-100"
-          onClick={() => setView(AppView.SPELLING)}
-        />
-
-        <MenuButton
-          title="יוצא דופן"
-          icon={<BrainCircuit size={28} />}
-          color="bg-orange-400"
-          borderColor="border-orange-100"
-          onClick={() => setView(AppView.ODD_ONE_OUT)}
-        />
-
-        <MenuButton
-          title="מבחן אמריקאי"
-          icon={<GraduationCap size={28} />}
-          color="bg-green-500"
-          borderColor="border-green-100"
-          onClick={() => setView(AppView.QUIZ)}
-        />
-
-        <MenuButton
-          title="בניית משפטים"
-          icon={<Type size={28} />}
-          color="bg-teal-500"
-          borderColor="border-teal-100"
-          onClick={() => setView(AppView.SENTENCE_BUILDER)}
-        />
-
-        <MenuButton
-          title="הבנת הנקרא"
-          icon={<BookCheck size={28} />}
-          color="bg-sky-500"
-          borderColor="border-sky-100"
-          onClick={() => setView(AppView.STORY_READING)}
-        />
-      </div>
-
-      {/* Main Timer below buttons */}
-      <CountdownTimer />
-    </div>
-  )
-}
-
-const MenuButton: React.FC<{
-  title: string;
-  icon: React.ReactNode;
-  color: string;
-  borderColor: string;
-  onClick: () => void;
-}> = ({ title, icon, color, borderColor, onClick }) => {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full bg-white p-4 rounded-2xl shadow-sm border-2 ${borderColor} flex flex-col items-center justify-center gap-3 hover:shadow-md hover:border-current hover:scale-[1.02] transition-all active:scale-95 group h-32`}
-    >
-      <div className={`${color} text-white p-3 rounded-xl shadow-sm group-hover:scale-110 transition-transform`}>
-        {icon}
-      </div>
-      <h3 className="text-lg font-bold text-slate-700 group-hover:text-sky-600 transition-colors leading-none">{title}</h3>
-    </button>
-  )
-}
 
 export default App;

@@ -44,5 +44,17 @@ export enum AppView {
   SPELLING = 'SPELLING',
   IMAGE_QUIZ = 'IMAGE_QUIZ',
   SENTENCE_BUILDER = 'SENTENCE_BUILDER',
-  STORY_READING = 'STORY_READING'
+  STORY_READING = 'STORY_READING',
+  SHOP = 'SHOP'
+}
+
+export interface UserProfile {
+  coins: number;
+  unlockedLevels: AppView[];
+  levelScores: Record<string, number>;
+  purchasedItems: Record<string, boolean>;
+  avatar: {
+    color: string;
+    accessory: string;
+  };
 }

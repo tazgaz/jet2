@@ -4,7 +4,11 @@ import { QuizQuestion } from '../types';
 import { CheckCircle, XCircle, Loader2, Sparkles, AlertCircle, RefreshCw, Frown } from 'lucide-react';
 import { triggerSuccessConfetti, playSound } from '../utils/gameEffects';
 
-const Quiz: React.FC = () => {
+interface QuizProps {
+  onComplete: (score: number) => void;
+}
+
+const Quiz: React.FC<QuizProps> = ({ onComplete }) => {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -12,7 +16,7 @@ const Quiz: React.FC = () => {
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  
+
   // Animation state for wrong answer
   const [showSadFace, setShowSadFace] = useState(false);
 
@@ -40,7 +44,7 @@ const Quiz: React.FC = () => {
 
   const handleOptionClick = (option: string) => {
     if (isAnswered || showSadFace) return;
-    
+
     setSelectedOption(option);
     setIsAnswered(true);
 
@@ -50,7 +54,7 @@ const Quiz: React.FC = () => {
       setScore(prev => prev + 1);
       triggerSuccessConfetti();
       playSound('success');
-      
+
       // Auto advance after success animation
       setTimeout(() => {
         nextQuestion();
@@ -59,7 +63,7 @@ const Quiz: React.FC = () => {
     } else {
       playSound('error');
       setShowSadFace(true);
-      
+
       // Auto advance after sad face animation
       setTimeout(() => {
         setShowSadFace(false);
@@ -69,7 +73,12 @@ const Quiz: React.FC = () => {
   };
 
   const nextQuestion = () => {
-    setCurrentQuestionIndex(prev => prev + 1);
+    const nextIndex = currentQuestionIndex + 1;
+    if (nextIndex >= questions.length) {
+      // Award 10 gems per correct answer
+      onComplete(score * 10);
+    }
+    setCurrentQuestionIndex(nextIndex);
     setSelectedOption(null);
     setIsAnswered(false);
     setShowSadFace(false);
@@ -94,26 +103,26 @@ const Quiz: React.FC = () => {
   }
 
   if (error || questions.length === 0) {
-     return (
-        <div className="flex flex-col items-center justify-center h-64 text-red-500 text-center">
-            <AlertCircle size={48} className="mb-4"/>
-            <p className="text-lg font-bold mb-4">אופס, היתה בעיה בטעינת השאלות</p>
-            <button onClick={restartQuiz} className="bg-sky-500 text-white px-6 py-2 rounded-full font-bold">נסה שוב</button>
-        </div>
-     )
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-red-500 text-center">
+        <AlertCircle size={48} className="mb-4" />
+        <p className="text-lg font-bold mb-4">אופס, היתה בעיה בטעינת השאלות</p>
+        <button onClick={restartQuiz} className="bg-sky-500 text-white px-6 py-2 rounded-full font-bold">נסה שוב</button>
+      </div>
+    )
   }
 
   if (currentQuestionIndex >= questions.length) {
     return (
       <div className="flex flex-col items-center justify-center max-w-lg mx-auto p-8 bg-white rounded-3xl shadow-lg text-center">
         <div className="bg-yellow-100 p-4 rounded-full mb-6">
-            <Sparkles size={48} className="text-yellow-500" />
+          <Sparkles size={48} className="text-yellow-500" />
         </div>
         <h2 className="text-3xl font-bold text-slate-800 mb-2">המבחן הסתיים!</h2>
         <p className="text-xl text-slate-600 mb-8">
           הציון שלך: <span className="font-bold text-sky-600">{score}</span> מתוך <span className="font-bold text-sky-600">{questions.length}</span>
         </p>
-        <button 
+        <button
           onClick={restartQuiz}
           className="w-full py-4 bg-sky-500 hover:bg-sky-600 text-white rounded-xl font-bold text-xl shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
         >
@@ -129,7 +138,7 @@ const Quiz: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto w-full p-4 relative">
-      
+
       {/* Sad Face Overlay */}
       {showSadFace && (
         <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
@@ -158,7 +167,7 @@ const Quiz: React.FC = () => {
         <div className="space-y-4">
           {currentQuestion.options.map((option, idx) => {
             let btnClass = "w-full p-4 rounded-xl text-lg font-medium text-right border-2 transition-all duration-200 flex justify-between items-center ";
-            
+
             if (isAnswered) {
               if (option === currentQuestion.correctAnswer) {
                 btnClass += "bg-green-100 border-green-500 text-green-800 scale-[1.02] shadow-sm";
@@ -173,7 +182,7 @@ const Quiz: React.FC = () => {
             }
 
             return (
-              <button 
+              <button
                 key={idx}
                 onClick={() => handleOptionClick(option)}
                 className={btnClass}
@@ -188,15 +197,15 @@ const Quiz: React.FC = () => {
         </div>
 
         <div className="mt-8 h-12 flex justify-center items-center">
-            {/* Auto-advance logic implies we don't need a next button, but we show a placeholder text if needed */}
-            {!isAnswered ? (
-                <p className="text-slate-400 text-sm font-medium self-center">בחר את התשובה הנכונה</p>
-            ) : (
-                <div className="flex items-center gap-2 text-sky-600 animate-pulse">
-                    <Loader2 className="animate-spin" size={20} />
-                    <span className="font-bold">עובר לשאלה הבאה...</span>
-                </div>
-            )}
+          {/* Auto-advance logic implies we don't need a next button, but we show a placeholder text if needed */}
+          {!isAnswered ? (
+            <p className="text-slate-400 text-sm font-medium self-center">בחר את התשובה הנכונה</p>
+          ) : (
+            <div className="flex items-center gap-2 text-sky-600 animate-pulse">
+              <Loader2 className="animate-spin" size={20} />
+              <span className="font-bold">עובר לשאלה הבאה...</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

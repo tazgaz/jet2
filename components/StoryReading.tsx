@@ -3,7 +3,11 @@ import { Volume2, Check, X, ArrowRight, ArrowLeft, BookOpen, CheckCircle2 } from
 import confetti from 'canvas-confetti';
 import { STORIES } from '../data/stories';
 
-const StoryReading: React.FC = () => {
+interface StoryReadingProps {
+    onComplete: (score: number) => void;
+}
+
+const StoryReading: React.FC<StoryReadingProps> = ({ onComplete }) => {
     const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
     const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -66,6 +70,9 @@ const StoryReading: React.FC = () => {
 
         setScore(currentScore);
         setIsSubmitted(true);
+
+        // Award gems based on correct answers (e.g. 10 per correct answer)
+        onComplete(currentScore * 10);
 
         if (currentScore === story.questions.length) {
             playSound('success');
@@ -211,8 +218,8 @@ const StoryReading: React.FC = () => {
                         onClick={checkAnswers}
                         disabled={Object.keys(selectedAnswers).length < story.questions.length}
                         className={`w-full py-4 rounded-2xl text-xl font-bold flex items-center justify-center gap-2 transition-all transform active:scale-95 shadow-lg ${Object.keys(selectedAnswers).length < story.questions.length
-                                ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                                : 'bg-sky-500 hover:bg-sky-600 text-white'
+                            ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                            : 'bg-sky-500 hover:bg-sky-600 text-white'
                             }`}
                     >
                         <CheckCircle2 size={24} />

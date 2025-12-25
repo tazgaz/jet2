@@ -46,7 +46,11 @@ const SENTENCE_POOL: SentenceItem[] = [
     { subject: "The stars", emoji: "⭐", english: "The stars shine at night" }
 ];
 
-const SentenceBuilder: React.FC = () => {
+interface SentenceBuilderProps {
+    onComplete: (score: number) => void;
+}
+
+const SentenceBuilder: React.FC<SentenceBuilderProps> = ({ onComplete }) => {
     const [gameSession, setGameSession] = useState<SentenceItem[]>([]);
     const [currentRound, setCurrentRound] = useState(0);
     const [bankWords, setBankWords] = useState<Word[]>([]);
@@ -155,6 +159,8 @@ const SentenceBuilder: React.FC = () => {
                     loadRound(gameSession[nextRound]);
                 } else {
                     setGameState('game-over');
+                    // Each correct sentence earns 10 gems/coins
+                    onComplete((score + 1) * 10);
                 }
             }, 2500);
         } else {
@@ -199,10 +205,10 @@ const SentenceBuilder: React.FC = () => {
                         <div
                             key={i}
                             className={`w-10 h-3 rounded-full transition-all duration-300 ${i < currentRound
-                                    ? 'bg-teal-500'
-                                    : i === currentRound
-                                        ? 'bg-sky-400 animate-pulse'
-                                        : 'bg-slate-200'
+                                ? 'bg-teal-500'
+                                : i === currentRound
+                                    ? 'bg-sky-400 animate-pulse'
+                                    : 'bg-slate-200'
                                 }`}
                         />
                     ))}
@@ -236,8 +242,8 @@ const SentenceBuilder: React.FC = () => {
                         key={word.id}
                         onClick={() => handleWordClick(word, 'construction')}
                         className={`px-4 py-2 rounded-xl text-lg font-bold shadow-sm transition-all transform hover:-translate-y-1 active:scale-95 ${feedback === 'success'
-                                ? 'bg-teal-500 text-white cursor-default'
-                                : 'bg-white text-teal-700 hover:bg-teal-50 border-2 border-teal-100'
+                            ? 'bg-teal-500 text-white cursor-default'
+                            : 'bg-white text-teal-700 hover:bg-teal-50 border-2 border-teal-100'
                             }`}
                     >
                         {word.text}
@@ -277,8 +283,8 @@ const SentenceBuilder: React.FC = () => {
                     onClick={checkAnswer}
                     disabled={gameState !== 'playing' || constructionArea.length === 0}
                     className={`flex-1 py-4 rounded-2xl text-xl font-bold flex items-center justify-center gap-2 transition-all transform active:scale-95 shadow-lg ${constructionArea.length === 0 || gameState !== 'playing'
-                            ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                            : 'bg-teal-500 hover:bg-teal-600 text-white'
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                        : 'bg-teal-500 hover:bg-teal-600 text-white'
                         }`}
                 >
                     {gameState === 'round-end' ? (
