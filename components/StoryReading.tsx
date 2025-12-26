@@ -8,17 +8,28 @@ interface StoryReadingProps {
 }
 
 const StoryReading: React.FC<StoryReadingProps> = ({ onComplete }) => {
+    const [activeStories, setActiveStories] = useState<typeof STORIES>([]);
     const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
     const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const [score, setScore] = useState(0);
+    const [totalScore, setTotalScore] = useState(0);
+    const [currentStoryScore, setCurrentStoryScore] = useState(0);
     const [isVisible, setIsVisible] = useState(true);
+    const [isFinished, setIsFinished] = useState(false);
 
-    const story = STORIES[currentStoryIndex];
+    useEffect(() => {
+        // Shuffle and pick 3 random stories
+        const shuffled = [...STORIES].sort(() => Math.random() - 0.5);
+        setActiveStories(shuffled.slice(0, 3));
+    }, []);
 
     useEffect(() => {
         setIsVisible(true);
     }, [currentStoryIndex]);
+
+    if (activeStories.length === 0) return null;
+
+    const story = activeStories[currentStoryIndex];
 
     const speakText = (text: string) => {
         if ('speechSynthesis' in window) {
@@ -61,23 +72,21 @@ const StoryReading: React.FC<StoryReadingProps> = ({ onComplete }) => {
     const checkAnswers = () => {
         if (Object.keys(selectedAnswers).length < story.questions.length) return;
 
-        let currentScore = 0;
+        let correctCount = 0;
         story.questions.forEach(q => {
             if (selectedAnswers[q.id] === q.correctAnswer) {
-                currentScore++;
+                correctCount++;
             }
         });
 
-        setScore(currentScore);
+        setCurrentStoryScore(correctCount);
+        setTotalScore(prev => prev + correctCount);
         setIsSubmitted(true);
 
-        // Award gems based on correct answers (e.g. 10 per correct answer)
-        onComplete(currentScore * 10);
-
-        if (currentScore === story.questions.length) {
+        if (correctCount === story.questions.length) {
             playSound('success');
             confetti({
-                particleCount: 100,
+                particleCount: 50,
                 spread: 70,
                 origin: { y: 0.6 },
                 colors: ['#0ea5e9', '#38bdf8', '#7dd3fc']
@@ -88,59 +97,60 @@ const StoryReading: React.FC<StoryReadingProps> = ({ onComplete }) => {
     };
 
     const nextStory = () => {
-        if (currentStoryIndex < STORIES.length - 1) {
+        if (currentStoryIndex < activeStories.length - 1) {
             setIsVisible(false);
             setTimeout(() => {
                 setCurrentStoryIndex(prev => prev + 1);
                 setSelectedAnswers({});
                 setIsSubmitted(false);
-                setScore(0);
+                setCurrentStoryScore(0);
             }, 300);
-        }
-    };
-
-    const prevStory = () => {
-        if (currentStoryIndex > 0) {
-            setIsVisible(false);
+        } else {
+            // Finished all 3 stories
+            setIsFinished(true);
+            const finalGems = totalScore * 10;
+            // Short delay to show final story result before completing
             setTimeout(() => {
-                setCurrentStoryIndex(prev => prev - 1);
-                setSelectedAnswers({});
-                setIsSubmitted(false);
-                setScore(0);
-            }, 300);
+                onComplete(finalGems);
+            }, 1500);
         }
     };
 
     return (
         <div className={`w-full max-w-2xl mx-auto p-4 transition-all duration-300 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} dir="ltr">
+            {/* Progress Header */}
+            <div className="mb-6 bg-white p-4 rounded-3xl shadow-sm border border-sky-100">
+                <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-bold text-sky-400 uppercase tracking-widest">
+                        Story {currentStoryIndex + 1} of 3
+                    </span>
+                    <span className="text-xs font-bold text-sky-600">
+                        {Math.round(((currentStoryIndex + (isSubmitted ? 1 : 0)) / 3) * 100)}% Complete
+                    </span>
+                </div>
+                <div className="w-full h-3 bg-sky-50 rounded-full overflow-hidden">
+                    <div
+                        className="h-full bg-sky-500 transition-all duration-500"
+                        style={{ width: `${((currentStoryIndex + (isSubmitted ? 1 : 0)) / 3) * 100}%` }}
+                    />
+                </div>
+            </div>
+
             {/* Header */}
             <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-3xl shadow-sm border border-sky-100">
-                <button
-                    onClick={prevStory}
-                    disabled={currentStoryIndex === 0}
-                    className="p-2 text-sky-600 disabled:opacity-30 hover:bg-sky-50 rounded-full transition-colors"
-                >
-                    <ArrowLeft size={24} />
-                </button>
-
+                <div className="flex-1" />
                 <div className="flex flex-col items-center">
-                    <span className="text-xs font-bold text-sky-400 uppercase tracking-widest">Reading Practice</span>
                     <h2 className="text-xl font-bold text-sky-900">{story.title}</h2>
                 </div>
-
-                <button
-                    onClick={nextStory}
-                    disabled={currentStoryIndex === STORIES.length - 1}
-                    className="p-2 text-sky-600 disabled:opacity-30 hover:bg-sky-50 rounded-full transition-colors"
-                >
-                    <ArrowRight size={24} />
-                </button>
+                <div className="flex-1 flex justify-end">
+                    <span className="text-2xl">{story.emoji}</span>
+                </div>
             </div>
 
             {/* Story Card */}
             <div className="bg-white rounded-3xl shadow-lg overflow-hidden border-b-8 border-sky-100 mb-8">
                 <div className="bg-sky-500 p-6 flex items-center justify-between">
-                    <span className="text-4xl">{story.emoji}</span>
+                    <BookOpen className="text-white/80" size={24} />
                     <button
                         onClick={() => speakText(story.text.join(' '))}
                         className="p-3 bg-white/20 hover:bg-white/30 text-white rounded-2xl transition-all active:scale-95"
@@ -229,21 +239,32 @@ const StoryReading: React.FC<StoryReadingProps> = ({ onComplete }) => {
                     <div className="flex gap-4">
                         <div className="flex-1 bg-white border-2 border-sky-100 rounded-2xl flex items-center justify-center p-4">
                             <p className="text-xl font-bold text-sky-700">
-                                Score: {score} / {story.questions.length}
+                                Story Score: {currentStoryScore} / {story.questions.length}
                             </p>
                         </div>
-                        {currentStoryIndex < STORIES.length - 1 && (
-                            <button
-                                onClick={nextStory}
-                                className="flex-[2] py-4 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl text-xl font-bold flex items-center justify-center gap-2 transition-all transform active:scale-95 shadow-lg"
-                            >
-                                Next Story
-                                <ArrowRight size={24} />
-                            </button>
-                        )}
+                        <button
+                            onClick={nextStory}
+                            className="flex-[2] py-4 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl text-xl font-bold flex items-center justify-center gap-2 transition-all transform active:scale-95 shadow-lg"
+                        >
+                            {currentStoryIndex < activeStories.length - 1 ? 'Next Story' : 'Finish Activity'}
+                            <ArrowRight size={24} />
+                        </button>
                     </div>
                 )}
             </div>
+
+            {isFinished && (
+                <div className="fixed inset-0 bg-sky-500/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 text-white text-center">
+                    <div className="space-y-6 animate-bounce">
+                        <div className="text-6xl text-white">🏆</div>
+                        <h2 className="text-4xl font-black">All Done!</h2>
+                        <p className="text-2xl font-bold">Great job completing 3 stories!</p>
+                        <div className="text-xl bg-white/20 p-4 rounded-2xl">
+                            Total Coins: {totalScore * 10} 💎
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
