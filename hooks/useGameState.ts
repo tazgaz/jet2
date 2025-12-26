@@ -10,6 +10,7 @@ const LEVEL_ORDER = [
     AppView.IMAGE_QUIZ,
     AppView.MEMORY,
     AppView.SPELLING,
+    AppView.WORD_INVADERS,
     AppView.ODD_ONE_OUT,
     AppView.QUIZ,
     AppView.SENTENCE_BUILDER,

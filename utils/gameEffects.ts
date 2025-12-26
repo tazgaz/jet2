@@ -57,3 +57,17 @@ export const playSound = (type: 'success' | 'error') => {
     oscillator.stop(ctx.currentTime + 0.4);
   }
 };
+
+export const speakWord = (word: string) => {
+  if (!window.speechSynthesis) return;
+
+  // Cancel any ongoing speech
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(word);
+  utterance.lang = 'en-US';
+  utterance.rate = 0.9; // Slightly slower for clarity
+  utterance.pitch = 1.1; // Slightly child-friendly pitch
+
+  window.speechSynthesis.speak(utterance);
+};

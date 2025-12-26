@@ -10,7 +10,8 @@ import {
     GraduationCap,
     Type,
     BookCheck,
-    Diamond
+    Diamond,
+    Rocket
 } from 'lucide-react';
 
 interface GameMapProps {
@@ -28,6 +29,7 @@ const LEVEL_METADATA: Record<string, { title: string, icon: any, color: string, 
     [AppView.QUIZ]: { title: 'מבחן', icon: GraduationCap, color: 'bg-green-500', borderColor: 'border-green-200' },
     [AppView.SENTENCE_BUILDER]: { title: 'בניית משפטים', icon: Type, color: 'bg-teal-500', borderColor: 'border-teal-200' },
     [AppView.STORY_READING]: { title: 'הבנת הנקרא', icon: BookCheck, color: 'bg-sky-500', borderColor: 'border-sky-200' },
+    [AppView.WORD_INVADERS]: { title: 'פולשי המילים', icon: Rocket, color: 'bg-rose-500', borderColor: 'border-rose-200' },
 };
 
 const GameMap: React.FC<GameMapProps> = ({ profile, levelOrder, onSelectLevel }) => {

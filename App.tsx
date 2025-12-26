@@ -9,6 +9,7 @@ import ImageQuiz from './components/ImageQuiz';
 import CountdownTimer from './components/CountdownTimer';
 import SentenceBuilder from './components/SentenceBuilder';
 import StoryReading from './components/StoryReading';
+import WordInvaders from './components/WordInvaders';
 import GameMap from './components/GameMap';
 import DiamondShop from './components/DiamondShop';
 import { useGameState } from './hooks/useGameState';
@@ -66,6 +67,8 @@ const App: React.FC = () => {
         return <SentenceBuilder key={gameKey} onComplete={handleGameComplete} />;
       case AppView.STORY_READING:
         return <StoryReading key={gameKey} onComplete={handleGameComplete} />;
+      case AppView.WORD_INVADERS:
+        return <WordInvaders key={gameKey} onComplete={handleGameComplete} />;
       case AppView.SHOP:
         return (
           <DiamondShop
