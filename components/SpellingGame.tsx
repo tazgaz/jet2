@@ -19,6 +19,7 @@ const SpellingGame: React.FC<SpellingGameProps> = ({ onComplete }) => {
   const [gameStatus, setGameStatus] = useState<'playing' | 'correct' | 'wrong'>('playing');
   const [wordList, setWordList] = useState<VocabWord[]>([]);
   const [streak, setStreak] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
 
   useEffect(() => {
     // Shuffle vocabulary list for the game session
@@ -66,6 +67,7 @@ const SpellingGame: React.FC<SpellingGameProps> = ({ onComplete }) => {
       if (builtWord.toLowerCase() === currentWord.english.toLowerCase()) {
         setGameStatus('correct');
         setStreak(prev => prev + 1);
+        setCorrectCount(prev => prev + 1);
         speak(currentWord.english);
       } else {
         setGameStatus('wrong');
@@ -86,13 +88,15 @@ const SpellingGame: React.FC<SpellingGameProps> = ({ onComplete }) => {
   };
 
   const nextWord = () => {
-    const nextIndex = currentWordIndex + 1;
-    if (nextIndex >= 10 || nextIndex >= wordList.length) {
-      // Award 8 gems per word in the streak
-      onComplete(streak * 8);
+    if (correctCount >= 10) {
+      // Award 8 gems per correct answer
+      onComplete(correctCount * 8);
       setCurrentWordIndex(0);
       setStreak(0);
+      setCorrectCount(0);
     } else {
+      // Pick next word, wrap around if needed
+      const nextIndex = (currentWordIndex + 1) % wordList.length;
       setCurrentWordIndex(nextIndex);
     }
   };
@@ -134,7 +138,7 @@ const SpellingGame: React.FC<SpellingGameProps> = ({ onComplete }) => {
       <div className="w-full flex justify-between items-center mb-6">
         <h2 className="text-2xl font-display font-bold text-pink-600">סדר את האותיות</h2>
         <div className="bg-pink-100 px-4 py-1 rounded-full text-pink-700 font-bold">
-          רצף הצלחות: {streak} 🔥
+          התקדמות: {correctCount}/10 🎯
         </div>
       </div>
 
