@@ -53,7 +53,7 @@ const GameMap: React.FC<GameMapProps> = ({ profile, levelOrder, onSelectLevel })
         for (let i = 0; i < levelOrder.length; i++) {
             const { row, col } = getCoordinates(i);
             const x = col * 100 + 50;
-            const y = row * 140 + 70; // Increased spacing for better curves
+            const y = row * 140 + 70;
 
             if (i === 0) {
                 path += `M ${x} ${y}`;
@@ -63,13 +63,9 @@ const GameMap: React.FC<GameMapProps> = ({ profile, levelOrder, onSelectLevel })
                 const prevY = prev.row * 140 + 70;
 
                 if (prev.row === row) {
-                    // Straight horizontal line in the same row
                     path += ` L ${x} ${y}`;
                 } else {
-                    // S-curve vertical transition between rows
                     const midY = (prevY + y) / 2;
-                    // We need a path that goes from prevX to x while moving from prevY to y
-                    // Using two cubic curves to make an S shape
                     path += ` C ${prevX} ${midY}, ${x} ${midY}, ${x} ${y}`;
                 }
             }
@@ -79,7 +75,7 @@ const GameMap: React.FC<GameMapProps> = ({ profile, levelOrder, onSelectLevel })
 
     return (
         <div className="relative w-full max-w-md mx-auto py-16 px-4" dir="ltr">
-            {/* SVG Path Background - Removed negative z-index to avoid background coverage */}
+            {/* SVG Path Background */}
             <div className="absolute inset-0 z-0 overflow-visible pointer-events-none">
                 <svg
                     className="w-full h-full min-h-[600px]"
@@ -88,16 +84,11 @@ const GameMap: React.FC<GameMapProps> = ({ profile, levelOrder, onSelectLevel })
                 >
                     <defs>
                         <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#38bdf8" /> {/* Sky-400 */}
-                            <stop offset="100%" stopColor="#0ea5e9" /> {/* Sky-500 */}
+                            <stop offset="0%" stopColor="#38bdf8" />
+                            <stop offset="100%" stopColor="#0ea5e9" />
                         </linearGradient>
-                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                            <feGaussianBlur stdDeviation="3" result="blur" />
-                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                        </filter>
                     </defs>
 
-                    {/* Background "Track" - Darker and more visible */}
                     <path
                         d={generatePath()}
                         fill="none"
@@ -107,18 +98,6 @@ const GameMap: React.FC<GameMapProps> = ({ profile, levelOrder, onSelectLevel })
                         strokeLinejoin="round"
                     />
 
-                    {/* Shadow/Glow */}
-                    <path
-                        d={generatePath()}
-                        fill="none"
-                        stroke="#bae6fd"
-                        strokeWidth="10"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        opacity="0.5"
-                    />
-
-                    {/* Main animated dashed path - Darker Blue */}
                     <path
                         d={generatePath()}
                         fill="none"
@@ -130,7 +109,7 @@ const GameMap: React.FC<GameMapProps> = ({ profile, levelOrder, onSelectLevel })
                         className="animate-[dash_30s_linear_infinite]"
                     />
 
-                    {/* Connection Dots - More prominent */}
+                    {/* Connection Dots */}
                     {levelOrder.map((_, i) => {
                         const { row, col } = getCoordinates(i);
                         return (
@@ -148,7 +127,7 @@ const GameMap: React.FC<GameMapProps> = ({ profile, levelOrder, onSelectLevel })
                 </svg>
             </div>
 
-            {/* Level Nodes - relative z-10 to stay above SVG */}
+            {/* Level Nodes */}
             <div
                 className="grid gap-y-20 relative z-10"
                 style={{
@@ -175,8 +154,10 @@ const GameMap: React.FC<GameMapProps> = ({ profile, levelOrder, onSelectLevel })
                             {/* Avatar on Current Level */}
                             {isCurrent && (
                                 <div className="absolute -top-16 z-20 animate-bounce">
-                                    <div className={`${profile.avatar.color} w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-3xl shadow-xl border-4 border-white transition-all ring-4 ring-sky-100`}>
-                                        {profile.avatar.accessory}
+                                    <div className={`relative ${profile.avatar.aura && profile.avatar.aura !== 'none' ? profile.avatar.aura : ''} rounded-full transition-all`}>
+                                        <div className={`${profile.avatar.color} ${profile.avatar.background || ''} w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-3xl shadow-xl border-4 border-white transition-all`}>
+                                            {profile.avatar.accessory}
+                                        </div>
                                     </div>
                                     <div className="w-4 h-2 bg-black/20 rounded-full blur-[2px] mx-auto mt-1" />
                                 </div>
@@ -205,13 +186,8 @@ const GameMap: React.FC<GameMapProps> = ({ profile, levelOrder, onSelectLevel })
                                         </div>
                                     )}
                                 </button>
-
-                                {isUnlocked && (
-                                    <div className="absolute -inset-2 bg-white/50 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                                )}
                             </div>
 
-                            {/* Title with background for readability */}
                             <div className="mt-2 px-2 py-0.5 bg-white/80 backdrop-blur-sm rounded-full shadow-sm border border-white/50">
                                 <span className={`text-[10px] sm:text-xs font-black text-center uppercase tracking-tight max-w-[85px] leading-tight block ${isUnlocked ? 'text-slate-800' : 'text-slate-400'}`}>
                                     {meta.title}

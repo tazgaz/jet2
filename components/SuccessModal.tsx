@@ -37,15 +37,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
                             <span className="text-2xl font-black text-slate-800">+{score}</span>
                         </div>
 
-                        {earnedMinutes > 0 && (
-                            <div className="bg-sky-50 p-4 rounded-2xl flex flex-col items-center">
-                                <div className="flex items-center gap-1.5 mb-1">
-                                    <Clock size={20} className="text-sky-500" />
-                                    <span className="text-sm font-bold text-sky-500">זמן צבור</span>
-                                </div>
-                                <span className="text-2xl font-black text-sky-700">+{earnedMinutes} ד'</span>
-                            </div>
-                        )}
+
                     </div>
 
                     <div className="flex flex-col gap-3">

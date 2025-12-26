@@ -50,13 +50,13 @@ export enum AppView {
 
 export interface UserProfile {
   coins: number;
-  earnedMinutes: number;
-  receivedFirstLevelTime: boolean;
   unlockedLevels: AppView[];
   levelScores: Record<string, number>;
   purchasedItems: Record<string, boolean>;
   avatar: {
     color: string;
     accessory: string;
+    background?: string;
+    aura?: string;
   };
 }

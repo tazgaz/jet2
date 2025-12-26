@@ -20,20 +20,10 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>(AppView.HOME);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [lastScore, setLastScore] = useState(0);
-  const [lastAddedMinutes, setLastAddedMinutes] = useState(0);
 
   const handleGameComplete = (score: number) => {
-    const wasReceivedFirstTime = profile.receivedFirstLevelTime;
     updateLevelScore(currentView, score);
     setLastScore(score);
-
-    // Check if minutes were added (first level reward)
-    if (currentView === LEVEL_ORDER[0] && score >= 5 && !wasReceivedFirstTime) {
-      setLastAddedMinutes(10);
-    } else {
-      setLastAddedMinutes(0);
-    }
-
     setShowSuccessModal(true);
   };
 
@@ -106,7 +96,6 @@ const App: React.FC = () => {
       {showSuccessModal && (
         <SuccessModal
           score={lastScore}
-          earnedMinutes={lastAddedMinutes}
           onRestart={handleRestart}
           onContinue={handleContinue}
           hasNextLevel={LEVEL_ORDER.indexOf(currentView) < LEVEL_ORDER.length - 1 && profile.unlockedLevels.includes(LEVEL_ORDER[LEVEL_ORDER.indexOf(currentView) + 1])}
@@ -129,12 +118,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            {profile.earnedMinutes > 0 && (
-              <div className="flex items-center gap-1.5 bg-sky-50 px-3 py-1.5 rounded-full border border-sky-100 text-sky-700 mx-2 animate-pulse">
-                <Clock size={16} />
-                <span className="text-sm font-black whitespace-nowrap">{profile.earnedMinutes} ד' בונוס</span>
-              </div>
-            )}
+
 
             {currentView !== AppView.HOME ? (
               <div className="flex items-center gap-2">
