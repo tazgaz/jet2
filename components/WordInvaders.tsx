@@ -91,7 +91,8 @@ const WordInvaders: React.FC<WordInvadersProps> = ({ onComplete }) => {
             y: w.y + w.speed
         })).filter(w => {
             if (w.y > 100) {
-                if (w.isCorrect) {
+                // Only lose a life if the word that hit the bottom is the CURRENT target
+                if (w.word.english === targetWord?.english) {
                     livesLost++;
                 }
                 return false;
@@ -153,15 +154,15 @@ const WordInvaders: React.FC<WordInvadersProps> = ({ onComplete }) => {
             setTimeout(() => setLaser(null), 200);
         }
 
-        if (clickedWord.isCorrect) {
+        if (clickedWord.word.english === targetWord?.english) {
             playSound('success');
             speakWord(clickedWord.word.english);
             const newScore = score + 1;
             setScore(newScore);
             scoreRef.current = newScore;
 
-            // Remove the clicked word
-            wordsRef.current = wordsRef.current.filter(w => w.id !== clickedWord.id);
+            // Remove all identical words
+            wordsRef.current = wordsRef.current.filter(w => w.word.english !== clickedWord.word.english);
             setWords([...wordsRef.current]);
 
             if (newScore >= WIN_SCORE) {
@@ -180,8 +181,8 @@ const WordInvaders: React.FC<WordInvadersProps> = ({ onComplete }) => {
             setLives(newLives);
             livesRef.current = newLives;
 
-            // Flash red or something? Maybe just remove the wrong word to prevent double loss
-            wordsRef.current = wordsRef.current.filter(w => w.id !== clickedWord.id);
+            // Remove all identical words to prevent multiple penalties
+            wordsRef.current = wordsRef.current.filter(w => w.word.english !== clickedWord.word.english);
             setWords([...wordsRef.current]);
 
             if (newLives <= 0) {
